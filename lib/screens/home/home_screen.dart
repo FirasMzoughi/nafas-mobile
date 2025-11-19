@@ -78,7 +78,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showCreatePostDialog() {
-    final _postController = TextEditingController();
+    final postController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -88,7 +88,7 @@ class _HomePageState extends State<HomePage> {
           style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2F4F4F)),
         ),
         content: TextField(
-          controller: _postController,
+          controller: postController,
           maxLines: 5,
           decoration: InputDecoration(
             hintText: 'Write your feelings, story, or what happened...',
@@ -106,7 +106,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ElevatedButton(
             onPressed: () {
-              if (_postController.text.trim().isNotEmpty) {
+              if (postController.text.trim().isNotEmpty) {
                 // Simulate adding post (in real app, call API)
                 setState(() {
                   // Add to a local list or refresh

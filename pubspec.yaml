@@ -5,12 +5,13 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.8.0
+  sdk: '>=3.8.0 <4.0.0' # Explicitly defining the range (optional but clearer)
 
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  flutter_svg: ^2.0.9
 
 dev_dependencies:
   flutter_test:
@@ -20,7 +21,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-
-  # Optional: add assets if you have images
-  # assets:
-  #   - assets/images/
+  # Ensure consistent two-space indentation for assets
+  assets:
+    - assets/logoN.svg
