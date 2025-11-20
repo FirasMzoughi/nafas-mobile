@@ -1,5 +1,6 @@
 // chat_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -13,106 +14,156 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   final TextEditingController _messageController = TextEditingController();
   late TabController _tabController;
   
-  String _activeTab = 'chats';
+  String _activeTab = 'groups';
   Map<String, dynamic>? _selectedChat;
 
-  final List<Map<String, dynamic>> _chats = [
+  // GROUP CHATS - Support groups for mental health
+  final List<Map<String, dynamic>> _groupChats = [
     {
       'id': 1,
-      'user': 'Sarah L.',
-      'lastMessage': 'Thanks for the support today! Feeling better already.',
-      'time': '2 min',
-      'unread': 2,
-      'avatar': 'S',
-      'avatarColor': const LinearGradient(colors: [Color(0xFFFF6B9D), Color(0xFFFFC371)]),
-      'online': true,
+      'name': 'Depression Support Circle',
+      'description': 'Safe space for depression discussions',
+      'lastMessage': 'Sarah: Thanks everyone for today\'s session...',
+      'time': '5 min',
+      'unread': 3,
+      'icon': Icons.sentiment_dissatisfied_rounded,
+      'color': const LinearGradient(colors: [Color(0xFF66BB6A), Color(0xFF26A69A)]),
+      'members': 45,
+      'isActive': true,
+      'category': 'Depression',
     },
     {
       'id': 2,
-      'user': 'Mike D.',
-      'lastMessage': 'Hey, how was the meeting in the depression circle?',
+      'name': 'Addiction Recovery Group',
+      'description': 'Overcoming drugs & alcohol together',
+      'lastMessage': 'Mike: 30 days clean today! 🎉',
       'time': '1h',
       'unread': 0,
-      'avatar': 'M',
-      'avatarColor': const LinearGradient(colors: [Color(0xFFFFA726), Color(0xFFFB8C00)]),
-      'online': false,
+      'icon': Icons.local_hospital_rounded,
+      'color': const LinearGradient(colors: [Color(0xFFEF5350), Color(0xFFE53935)]),
+      'members': 28,
+      'isActive': true,
+      'category': 'Addiction',
     },
     {
       'id': 3,
-      'user': 'Emma W.',
-      'lastMessage': 'Let\'s schedule a voice session for anxiety relief.',
+      'name': 'Anxiety & Stress Relief',
+      'description': 'Managing anxiety and panic attacks',
+      'lastMessage': 'Emma: Breathing exercises really helped!',
       'time': '3h',
       'unread': 1,
-      'avatar': 'E',
-      'avatarColor': const LinearGradient(colors: [Color(0xFF66CDAA), Color(0xFF20B2AA)]),
-      'online': true,
+      'icon': Icons.psychology_rounded,
+      'color': const LinearGradient(colors: [Color(0xFF42A5F5), Color(0xFF26C6DA)]),
+      'members': 62,
+      'isActive': true,
+      'category': 'Anxiety',
     },
     {
       'id': 4,
-      'user': 'John S.',
-      'lastMessage': 'Shared my story about overcoming drugs - your turn?',
+      'name': 'Trauma Healing Community',
+      'description': 'Healing from past experiences',
+      'lastMessage': 'John: Your story inspired me to share mine',
+      'time': '5h',
+      'unread': 0,
+      'icon': Icons.favorite_rounded,
+      'color': const LinearGradient(colors: [Color(0xFFAB47BC), Color(0xFF9C27B0)]),
+      'members': 34,
+      'isActive': false,
+      'category': 'Trauma',
+    },
+    {
+      'id': 5,
+      'name': 'Bipolar Support Network',
+      'description': 'Living with bipolar disorder',
+      'lastMessage': 'Lisa: Managing mood swings this week...',
       'time': '1d',
       'unread': 0,
-      'avatar': 'J',
-      'avatarColor': const LinearGradient(colors: [Color(0xFF9575CD), Color(0xFF7E57C2)]),
-      'online': false,
+      'icon': Icons.mood_rounded,
+      'color': const LinearGradient(colors: [Color(0xFFFF7043), Color(0xFFFF5722)]),
+      'members': 19,
+      'isActive': true,
+      'category': 'Bipolar',
     },
   ];
 
+  // PROFESSIONAL DOCTORS
   final List<Map<String, dynamic>> _doctors = [
     {
       'id': 1,
       'name': 'Dr. Sophie Martin',
-      'specialty': 'Psychiatre',
+      'specialty': 'Psychiatrist - Depression & Anxiety',
       'avatar': 'SM',
       'avatarColor': const LinearGradient(colors: [Color(0xFF42A5F5), Color(0xFF26C6DA)]),
       'rating': 4.9,
       'available': true,
-      'nextAvailable': 'Disponible maintenant',
+      'nextAvailable': 'Available now',
       'consultations': 234,
+      'languages': ['English', 'French', 'Arabic'],
+      'experience': '12 years',
+      'price': '\$80/session',
     },
     {
       'id': 2,
       'name': 'Dr. Ahmed Ben Ali',
-      'specialty': 'Psychologue Clinicien',
+      'specialty': 'Clinical Psychologist - Trauma',
       'avatar': 'AB',
       'avatarColor': const LinearGradient(colors: [Color(0xFF7E57C2), Color(0xFF9C27B0)]),
       'rating': 4.8,
       'available': false,
-      'nextAvailable': 'Disponible à 15h',
+      'nextAvailable': 'Available at 3:00 PM',
       'consultations': 189,
+      'languages': ['Arabic', 'English'],
+      'experience': '8 years',
+      'price': '\$70/session',
     },
     {
       'id': 3,
       'name': 'Dr. Claire Dubois',
-      'specialty': 'Thérapeute',
+      'specialty': 'Therapist - Addiction Recovery',
       'avatar': 'CD',
       'avatarColor': const LinearGradient(colors: [Color(0xFFEC407A), Color(0xFFE91E63)]),
       'rating': 4.9,
       'available': true,
-      'nextAvailable': 'Disponible maintenant',
+      'nextAvailable': 'Available now',
       'consultations': 312,
+      'languages': ['French', 'English'],
+      'experience': '15 years',
+      'price': '\$90/session',
     },
     {
       'id': 4,
       'name': 'Dr. Karim Mansour',
-      'specialty': 'Addictologue',
+      'specialty': 'Addiction Specialist',
       'avatar': 'KM',
       'avatarColor': const LinearGradient(colors: [Color(0xFF66BB6A), Color(0xFF26A69A)]),
       'rating': 4.7,
       'available': true,
-      'nextAvailable': 'Disponible maintenant',
+      'nextAvailable': 'Available now',
       'consultations': 156,
+      'languages': ['Arabic', 'English', 'French'],
+      'experience': '10 years',
+      'price': '\$75/session',
     },
   ];
 
-  final List<Map<String, dynamic>> _messages = [
-    {'id': 1, 'text': 'Salut! Comment vas-tu aujourd\'hui?', 'sent': false, 'time': '10:30'},
-    {'id': 2, 'text': 'Ça va mieux merci! La séance d\'hier m\'a vraiment aidé.', 'sent': true, 'time': '10:32'},
-    {'id': 3, 'text': 'Super! Je suis content de l\'entendre 😊', 'sent': false, 'time': '10:33'},
-    {'id': 4, 'text': 'Tu veux qu\'on en parle plus en détail?', 'sent': false, 'time': '10:33'},
-    {'id': 5, 'text': 'Oui avec plaisir! J\'ai quelques questions', 'sent': true, 'time': '10:35'},
+  // Sample group messages
+  final List<Map<String, dynamic>> _groupMessages = [
+    {'id': 1, 'user': 'Sarah L.', 'text': 'Hi everyone, having a tough day today 😔', 'sent': false, 'time': '10:30', 'isAnonymous': false},
+    {'id': 2, 'user': 'You', 'text': 'We\'re here for you Sarah. What\'s going on?', 'sent': true, 'time': '10:32', 'isAnonymous': true},
+    {'id': 3, 'user': 'Mike D.', 'text': 'Same here, the struggle is real today', 'sent': false, 'time': '10:33', 'isAnonymous': true},
+    {'id': 4, 'user': 'Emma W.', 'text': 'Remember, one day at a time. We\'ve got this together 💚', 'sent': false, 'time': '10:35', 'isAnonymous': false},
   ];
+
+  // Sample doctor messages
+  final List<Map<String, dynamic>> _doctorMessages = [
+    {'id': 1, 'text': 'Hello! How are you feeling today?', 'sent': false, 'time': '10:30', 'isDoctor': true},
+    {'id': 2, 'text': 'I\'ve been struggling with anxiety lately', 'sent': true, 'time': '10:32', 'isDoctor': false},
+    {'id': 3, 'text': 'I understand. Can you tell me more about when these feelings started?', 'sent': false, 'time': '10:33', 'isDoctor': true},
+    {'id': 4, 'text': 'About two weeks ago, after a stressful event at work', 'sent': true, 'time': '10:35', 'isDoctor': false},
+    {'id': 5, 'text': 'That\'s a common trigger. Let\'s work on some coping strategies together.', 'sent': false, 'time': '10:37', 'isDoctor': true},
+  ];
+
+  List<Map<String, dynamic>> _currentMessages = [];
 
   @override
   void initState() {
@@ -131,15 +182,35 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   void _startChatWithDoctor(Map<String, dynamic> doctor) {
     setState(() {
       _selectedChat = {
-        'user': doctor['name'],
+        'name': doctor['name'],
         'avatar': doctor['avatar'],
         'avatarColor': doctor['avatarColor'],
         'specialty': doctor['specialty'],
         'isDoctor': true,
+        'isGroup': false,
         'available': doctor['available'],
         'online': doctor['available'],
       };
-      _activeTab = 'chats';
+      _currentMessages = List.from(_doctorMessages);
+      _activeTab = 'doctors';
+    });
+  }
+
+  void _openGroupChat(Map<String, dynamic> group) {
+    setState(() {
+      _selectedChat = {
+        'name': group['name'],
+        'icon': group['icon'],
+        'color': group['color'],
+        'description': group['description'],
+        'members': group['members'],
+        'isGroup': true,
+        'isDoctor': false,
+        'isActive': group['isActive'],
+        'category': group['category'],
+      };
+      _currentMessages = List.from(_groupMessages);
+      _activeTab = 'groups';
     });
   }
 
@@ -153,11 +224,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFFE3F2FD),
-              Color(0xFFF3E5F5),
-              Color(0xFFFCE4EC),
-            ],
+            colors: [Color(0xFFE8F5F3), Color(0xFFB2F7EF)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -167,7 +234,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
             children: [
               _buildHeader(),
               Expanded(
-                child: _activeTab == 'chats' ? _buildChatsList() : _buildDoctorsList(),
+                child: _activeTab == 'groups' ? _buildGroupsList() : _buildDoctorsList(),
               ),
             ],
           ),
@@ -179,78 +246,111 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   Widget _buildHeader() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
+        color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5F5F5),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: const InputDecoration(
-                        hintText: 'Rechercher des conversations...',
-                        prefixIcon: Icon(Icons.search, color: Color(0xFF9E9E9E)),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Support & Care',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2F4F4F),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Connect with groups and professionals',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
+                const Spacer(),
                 Container(
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF42A5F5), Color(0xFF26C6DA)],
+                      colors: [Color(0xFF2D9B87), Color(0xFF26A69A)],
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF42A5F5).withOpacity(0.3),
-                        blurRadius: 8,
+                        color: const Color(0xFF2D9B87).withOpacity(0.3),
+                        blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: IconButton(
-                    onPressed: _showNewChatDialog,
-                    icon: const Icon(Icons.add, color: Colors.white),
+                    onPressed: () {},
+                    icon: const Icon(Icons.help_outline_rounded, color: Colors.white),
+                    tooltip: 'Help & Guidelines',
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+            
+            // Search bar
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F9F8),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFF2D9B87).withOpacity(0.2),
+                  width: 1.5,
+                ),
+              ),
+              child: TextField(
+                controller: _searchController,
+                decoration: const InputDecoration(
+                  hintText: 'Search groups or doctors...',
+                  hintStyle: TextStyle(color: Color(0xFFB0BEC5)),
+                  prefixIcon: Icon(Icons.search_rounded, color: Color(0xFF2D9B87)),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            // Tabs
             Row(
               children: [
                 Expanded(
                   child: _buildTabButton(
-                    'chats',
-                    'Messages',
-                    Icons.chat_bubble_rounded,
-                    const LinearGradient(colors: [Color(0xFF42A5F5), Color(0xFF26C6DA)]),
+                    'groups',
+                    'Support Groups',
+                    Icons.groups_rounded,
+                    const LinearGradient(colors: [Color(0xFF66BB6A), Color(0xFF26A69A)]),
+                    _groupChats.where((g) => g['unread'] > 0).length,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildTabButton(
                     'doctors',
-                    'Médecins',
+                    'Professionals',
                     Icons.medical_services_rounded,
-                    const LinearGradient(colors: [Color(0xFF9C27B0), Color(0xFFE91E63)]),
+                    const LinearGradient(colors: [Color(0xFF42A5F5), Color(0xFF26C6DA)]),
+                    _doctors.where((d) => d['available']).length,
                   ),
                 ),
               ],
@@ -261,194 +361,98 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildTabButton(String tab, String label, IconData icon, Gradient gradient) {
+  Widget _buildTabButton(String tab, String label, IconData icon, Gradient gradient, int badge) {
     final isActive = _activeTab == tab;
     return GestureDetector(
-      onTap: () => setState(() => _activeTab = tab),
+      onTap: () {
+        setState(() => _activeTab = tab);
+        HapticFeedback.lightImpact();
+      },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           gradient: isActive ? gradient : null,
-          color: isActive ? null : const Color(0xFFF5F5F5),
-          borderRadius: BorderRadius.circular(25),
+          color: isActive ? null : const Color(0xFFF5F9F8),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: isActive
-              ? [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 8, offset: const Offset(0, 4))]
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ]
               : [],
+          border: isActive ? null : Border.all(color: const Color(0xFF2D9B87).withOpacity(0.2)),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            Icon(icon, color: isActive ? Colors.white : const Color(0xFF757575), size: 20),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: isActive ? Colors.white : const Color(0xFF757575),
-                fontWeight: FontWeight.w600,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  color: isActive ? Colors.white : const Color(0xFF78909C),
+                  size: 22,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isActive ? Colors.white : const Color(0xFF78909C),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
+            if (badge > 0)
+              Positioned(
+                top: 0,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: isActive ? Colors.white : const Color(0xFFEF5350),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    '$badge',
+                    style: TextStyle(
+                      color: isActive ? const Color(0xFF2D9B87) : Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildChatsList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _chats.length,
-      itemBuilder: (context, index) {
-        final chat = _chats[index];
-        return GestureDetector(
-          onTap: () => setState(() => _selectedChat = chat),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.5)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Stack(
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          gradient: chat['avatarColor'],
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Text(
-                            chat['avatar'],
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22,
-                            ),
-                          ),
-                        ),
-                      ),
-                      if (chat['online'])
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF4CAF50),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              chat['user'],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Color(0xFF212121),
-                              ),
-                            ),
-                            Text(
-                              chat['time'],
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF9E9E9E),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          chat['lastMessage'],
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF757575),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (chat['unread'] > 0) ...[
-                    const SizedBox(width: 12),
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF42A5F5), Color(0xFF26C6DA)],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF42A5F5).withOpacity(0.3),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        '${chat['unread']}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDoctorsList() {
+  Widget _buildGroupsList() {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       children: [
+        // Info banner
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF9C27B0), Color(0xFFE91E63)],
+              colors: [Color(0xFF66BB6A), Color(0xFF26A69A)],
             ),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF9C27B0).withOpacity(0.3),
+                color: const Color(0xFF66BB6A).withOpacity(0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),
@@ -456,26 +460,33 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
           ),
           child: Row(
             children: [
-              const Icon(Icons.medical_services_rounded, color: Colors.white, size: 32),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(Icons.shield_rounded, color: Colors.white, size: 28),
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     Text(
-                      'Consultez un médecin',
+                      'Safe & Anonymous',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Des professionnels de santé disponibles pour vous accompagner',
+                      'Share your journey with people who understand. Your identity is protected.',
                       style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 12,
+                        fontSize: 13,
                       ),
                     ),
                   ],
@@ -484,7 +495,256 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
+        
+        // Groups list
+        ..._groupChats.map((group) => _buildGroupCard(group)).toList(),
+      ],
+    );
+  }
+
+  Widget _buildGroupCard(Map<String, dynamic> group) {
+    return GestureDetector(
+      onTap: () => _openGroupChat(group),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: group['isActive'] 
+                ? const Color(0xFF2D9B87).withOpacity(0.3)
+                : Colors.grey.withOpacity(0.2),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(18.0),
+          child: Row(
+            children: [
+              // Group Icon
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: group['color'],
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  group['icon'],
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 16),
+              
+              // Group Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            group['name'],
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Color(0xFF2F4F4F),
+                            ),
+                          ),
+                        ),
+                        if (group['isActive'])
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4CAF50).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: const Color(0xFF4CAF50).withOpacity(0.3),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.circle, color: Color(0xFF4CAF50), size: 8),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Active',
+                                  style: TextStyle(
+                                    color: Color(0xFF4CAF50),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      group['description'],
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[600],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.people_rounded, size: 16, color: Colors.grey[600]),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${group['members']} members',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text('•', style: TextStyle(color: Color(0xFFB0BEC5))),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            group['lastMessage'],
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[500],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Unread badge or time
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (group['unread'] > 0)
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFEF5350), Color(0xFFE53935)],
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFEF5350).withOpacity(0.3),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        '${group['unread']}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  Text(
+                    group['time'],
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDoctorsList() {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        // Info banner
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF42A5F5), Color(0xFF26C6DA)],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF42A5F5).withOpacity(0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(Icons.verified_user_rounded, color: Colors.white, size: 28),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Professional Care',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Licensed professionals ready to support your mental health journey',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        
+        // Doctors list
         ..._doctors.map((doctor) => _buildDoctorCard(doctor)).toList(),
       ],
     );
@@ -494,176 +754,214 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.5)),
+        border: Border.all(
+          color: doctor['available']
+              ? const Color(0xFF2D9B87).withOpacity(0.3)
+              : Colors.grey.withOpacity(0.2),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
+        padding: const EdgeInsets.all(18.0),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
+            Row(
               children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    gradient: doctor['avatarColor'],
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      doctor['avatar'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
-                ),
-                if (doctor['available'])
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      width: 16,
-                      height: 16,
+                // Doctor Avatar
+                Stack(
+                  children: [
+                    Container(
+                      width: 70,
+                      height: 70,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4CAF50),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                        gradient: doctor['avatarColor'],
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          doctor['avatar'],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    if (doctor['available'])
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4CAF50),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 3),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                
+                // Doctor Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
                               doctor['name'],
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Color(0xFF212121),
+                                fontSize: 17,
+                                color: Color(0xFF2F4F4F),
                               ),
                             ),
-                            Text(
-                              doctor['specialty'],
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF757575),
-                              ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF8E1),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                          ],
-                        ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.star_rounded, color: Color(0xFFFFC107), size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${doctor['rating']}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: Color(0xFFF57C00),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFF8E1),
-                          borderRadius: BorderRadius.circular(12),
+                      const SizedBox(height: 4),
+                      Text(
+                        doctor['specialty'],
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[700],
                         ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.star, color: Color(0xFFFFC107), size: 14),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${doctor['rating']}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.access_time_rounded, size: 14, color: Colors.grey[600]),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              doctor['nextAvailable'],
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: Color(0xFFF57C00),
+                                color: doctor['available']
+                                    ? const Color(0xFF4CAF50)
+                                    : Colors.grey[600],
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.access_time, size: 14, color: Color(0xFF9E9E9E)),
-                      const SizedBox(width: 4),
-                      Text(
-                        doctor['nextAvailable'],
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF757575)),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text('•', style: TextStyle(color: Color(0xFF9E9E9E))),
-                      const SizedBox(width: 12),
-                      Text(
-                        '${doctor['consultations']} consultations',
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF757575)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _startChatWithDoctor(doctor),
-                          icon: const Icon(Icons.chat_bubble_rounded, size: 18),
-                          label: const Text('Chat'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF42A5F5),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(Icons.videocam_rounded, size: 18),
-                          label: const Text('Appel'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF9C27B0),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                          Text(
+                            doctor['price'],
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF2D9B87),
+                              fontWeight: FontWeight.bold,
                             ),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Additional info
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildInfoChip(Icons.work_outline_rounded, '${doctor['experience']} exp'),
+                _buildInfoChip(Icons.chat_bubble_outline_rounded, '${doctor['consultations']} sessions'),
+                ...doctor['languages'].take(2).map((lang) => 
+                  _buildInfoChip(Icons.language_rounded, lang)
+                ).toList(),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Action buttons
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _startChatWithDoctor(doctor),
+                    icon: const Icon(Icons.chat_bubble_rounded, size: 18),
+                    label: const Text('Start Chat'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D9B87),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      // Schedule consultation
+                    },
+                    icon: const Icon(Icons.videocam_rounded, size: 18),
+                    label: const Text('Video Call'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF42A5F5),
+                      side: const BorderSide(color: Color(0xFF42A5F5), width: 1.5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -671,36 +969,66 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     );
   }
 
+  Widget _buildInfoChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F9F8),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: const Color(0xFF2D9B87).withOpacity(0.2),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: const Color(0xFF2D9B87)),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF2F4F4F),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildChatInterface() {
+    final isGroup = _selectedChat!['isGroup'] == true;
+    
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFFAFAFA), Color(0xFFE3F2FD)],
+            colors: [Color(0xFFFAFAFA), Color(0xFFE8F5F3)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
         child: Column(
           children: [
-            _buildChatHeader(),
-            Expanded(child: _buildMessagesList()),
-            _buildMessageInput(),
+            _buildChatHeader(isGroup),
+            Expanded(child: _buildMessagesList(isGroup)),
+            _buildMessageInput(isGroup),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildChatHeader() {
+  Widget _buildChatHeader(bool isGroup) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -710,89 +1038,130 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
           child: Row(
             children: [
               IconButton(
-                onPressed: () => setState(() => _selectedChat = null),
-                icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF757575)),
+                onPressed: () => setState(() {
+                  _selectedChat = null;
+                  _currentMessages = [];
+                }),
+                icon: const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF2F4F4F)),
               ),
-              Stack(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: _selectedChat!['avatarColor'],
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        _selectedChat!['avatar'],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
+              
+              // Avatar/Icon
+              if (isGroup)
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    gradient: _selectedChat!['color'],
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  if (_selectedChat!['online'])
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
+                  child: Icon(
+                    _selectedChat!['icon'],
+                    color: Colors.white,
+                    size: 26,
+                  ),
+                )
+              else
+                Stack(
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        gradient: _selectedChat!['avatarColor'],
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Center(
+                        child: Text(
+                          _selectedChat!['avatar'],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
                         ),
                       ),
                     ),
-                ],
-              ),
+                    if (_selectedChat!['online'])
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4CAF50),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              
               const SizedBox(width: 12),
+              
+              // Chat Info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Text(
-                          _selectedChat!['user'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Color(0xFF212121),
+                        Flexible(
+                          child: Text(
+                            _selectedChat!['name'],
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
+                              color: Color(0xFF2F4F4F),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (_selectedChat!['isDoctor'] == true) ...[
-                          const SizedBox(width: 6),
-                          const Icon(Icons.medical_services_rounded, color: Color(0xFF42A5F5), size: 16),
-                        ],
+                        const SizedBox(width: 6),
+                        if (!isGroup)
+                          const Icon(
+                            Icons.verified_rounded,
+                            color: Color(0xFF42A5F5),
+                            size: 18,
+                          ),
                       ],
                     ),
+                    const SizedBox(height: 2),
                     Text(
-                      _selectedChat!['isDoctor'] == true
-                          ? _selectedChat!['specialty']
-                          : (_selectedChat!['online'] ? 'En ligne' : 'Hors ligne'),
-                      style: const TextStyle(
+                      isGroup
+                          ? '${_selectedChat!['members']} members • ${_selectedChat!['category']}'
+                          : _selectedChat!['specialty'],
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF9E9E9E),
+                        color: Colors.grey[600],
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
+              
+              // Action buttons
+              if (!isGroup) ...[
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.phone_rounded, color: Color(0xFF2D9B87)),
+                  tooltip: 'Voice Call',
+                ),
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.videocam_rounded, color: Color(0xFF2D9B87)),
+                  tooltip: 'Video Call',
+                ),
+              ],
               IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.phone, color: Color(0xFF757575)),
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.videocam_rounded, color: Color(0xFF757575)),
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.more_vert, color: Color(0xFF757575)),
+                onPressed: () {
+                  // Show group/chat info
+                },
+                icon: const Icon(Icons.info_outline_rounded, color: Color(0xFF78909C)),
               ),
             ],
           ),
@@ -801,112 +1170,204 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildMessagesList() {
+  Widget _buildMessagesList(bool isGroup) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _messages.length,
+      reverse: false,
+      itemCount: _currentMessages.length,
       itemBuilder: (context, index) {
-        final message = _messages[index];
-        return Align(
-          alignment: message['sent'] ? Alignment.centerRight : Alignment.centerLeft,
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
-            decoration: BoxDecoration(
-              gradient: message['sent']
-                  ? const LinearGradient(colors: [Color(0xFF42A5F5), Color(0xFF26C6DA)])
-                  : null,
-              color: message['sent'] ? null : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  message['text'],
-                  style: TextStyle(
-                    color: message['sent'] ? Colors.white : const Color(0xFF212121),
-                    fontSize: 14,
+        final message = _currentMessages[index];
+        final isSent = message['sent'] == true;
+        
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            mainAxisAlignment: isSent ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!isSent && isGroup) ...[
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: const Color(0xFF2D9B87).withOpacity(0.2),
+                  child: Text(
+                    message['user'][0],
+                    style: const TextStyle(
+                      color: Color(0xFF2D9B87),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.end,
+                const SizedBox(width: 8),
+              ],
+              
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: isSent ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      message['time'],
-                      style: TextStyle(
-                        color: message['sent'] ? Colors.white70 : const Color(0xFF9E9E9E),
-                        fontSize: 11,
+                    if (!isSent && isGroup)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4, left: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              message['user'],
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                            if (message['isAnonymous'] == true) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF9E9E9E).withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    Icon(Icons.shield_rounded, size: 10, color: Color(0xFF9E9E9E)),
+                                    SizedBox(width: 3),
+                                    Text(
+                                      'Anonymous',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        color: Color(0xFF9E9E9E),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: isSent
+                            ? const LinearGradient(
+                                colors: [Color(0xFF2D9B87), Color(0xFF26A69A)],
+                              )
+                            : null,
+                        color: isSent ? null : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            message['text'],
+                            style: TextStyle(
+                              color: isSent ? Colors.white : const Color(0xFF2F4F4F),
+                              fontSize: 15,
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                message['time'],
+                                style: TextStyle(
+                                  color: isSent ? Colors.white70 : Colors.grey[500],
+                                  fontSize: 11,
+                                ),
+                              ),
+                              if (isSent) ...[
+                                const SizedBox(width: 4),
+                                const Icon(Icons.done_all_rounded, color: Colors.white70, size: 14),
+                              ],
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    if (message['sent']) ...[
-                      const SizedBox(width: 4),
-                      const Icon(Icons.done_all, color: Colors.white70, size: 14),
-                    ],
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  Widget _buildMessageInput() {
+  Widget _buildMessageInput(bool isGroup) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
               IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.attach_file, color: Color(0xFF757575)),
+                onPressed: () {
+                  // Attach file
+                },
+                icon: const Icon(Icons.attach_file_rounded, color: Color(0xFF78909C)),
+                tooltip: 'Attach file',
               ),
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
+                    color: const Color(0xFFF5F9F8),
                     borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: const Color(0xFF2D9B87).withOpacity(0.2),
+                    ),
                   ),
                   child: TextField(
                     controller: _messageController,
-                    decoration: const InputDecoration(
-                      hintText: 'Écrivez votre message...',
+                    maxLines: null,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: InputDecoration(
+                      hintText: isGroup ? 'Message to group...' : 'Type your message...',
+                      hintStyle: const TextStyle(color: Color(0xFFB0BEC5)),
                       border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     ),
                   ),
                 ),
               ),
+              const SizedBox(width: 8),
               IconButton(
                 onPressed: () {},
-                icon: const Icon(Icons.emoji_emotions_outlined, color: Color(0xFF757575)),
+                icon: const Icon(Icons.emoji_emotions_outlined, color: Color(0xFF78909C)),
+                tooltip: 'Emoji',
               ),
               Container(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF42A5F5), Color(0xFF26C6DA)],
+                    colors: [Color(0xFF2D9B87), Color(0xFF26A69A)],
                   ),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF42A5F5).withOpacity(0.3),
+                      color: const Color(0xFF2D9B87).withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -915,124 +1376,21 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                 child: IconButton(
                   onPressed: () {
                     if (_messageController.text.trim().isNotEmpty) {
-                      // Envoyer le message
                       setState(() {
-                        _messages.add({
-                          'id': _messages.length + 1,
+                        _currentMessages.add({
+                          'id': _currentMessages.length + 1,
                           'text': _messageController.text,
                           'sent': true,
-                          'time': '${DateTime.now().hour}:${DateTime.now().minute}',
+                          'time': '${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+                          'user': 'You',
                         });
                         _messageController.clear();
                       });
                     }
                   },
-                  icon: const Icon(Icons.send, color: Colors.white),
+                  icon: const Icon(Icons.send_rounded, color: Colors.white),
+                  tooltip: 'Send',
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showNewChatDialog() {
-    final newChatController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Nouvelle conversation',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF212121),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: TextField(
-                  controller: newChatController,
-                  decoration: const InputDecoration(
-                    hintText: 'Nom d\'utilisateur...',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(16),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: TextButton.styleFrom(
-                        backgroundColor: const Color(0xFFF5F5F5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: const Text(
-                        'Annuler',
-                        style: TextStyle(
-                          color: Color(0xFF757575),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (newChatController.text.trim().isNotEmpty) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('Nouvelle conversation démarrée!'),
-                              backgroundColor: const Color(0xFF66CDAA),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF42A5F5),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: const Text(
-                        'Démarrer',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),

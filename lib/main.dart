@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:malath/screens/authentication/login_screen.dart';
+import 'package:malath/screens/splash/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.teal,
         fontFamily: 'Roboto',
       ),
-      home: const LoginScreen(),
+      home: const SplashScreen(),
     );
   }
 }
