@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:malath/core/theme/app_theme.dart';
+import 'package:malath/screens/voice/voice_screen.dart';
 import 'dart:ui';
 
 class VoiceRoomCard extends StatefulWidget {
@@ -89,7 +90,14 @@ class _VoiceRoomCardState extends State<VoiceRoomCard>
             Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => VoiceScreen(room: widget.room),
+                    ),
+                  );
+                },
                 borderRadius: BorderRadius.circular(24),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
@@ -101,7 +109,7 @@ class _VoiceRoomCardState extends State<VoiceRoomCard>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(3),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
@@ -113,10 +121,15 @@ class _VoiceRoomCardState extends State<VoiceRoomCard>
                                 ),
                               ],
                             ),
-                            child: Icon(
-                              widget.room['icon'],
-                              color: roomColor,
-                              size: 24,
+                            child: CircleAvatar(
+                              radius: 22,
+                              backgroundColor: roomColor.withOpacity(0.1),
+                              backgroundImage: const NetworkImage('https://i.pravatar.cc/150?img=12'), // Placeholder
+                              child: Icon(
+                                widget.room['icon'],
+                                color: roomColor,
+                                size: 20,
+                              ),
                             ),
                           ),
                           if (isLive)

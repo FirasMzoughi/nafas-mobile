@@ -121,7 +121,15 @@ class PostCard extends StatelessWidget {
                       label: '${post['comments']}',
                       color: AppTheme.textSecondary,
                       isActive: false,
-                      onTap: () {},
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Comments feature coming soon!'),
+                            behavior: SnackBarBehavior.floating,
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -129,7 +137,15 @@ class PostCard extends StatelessWidget {
                   icon: const Icon(Icons.share_outlined),
                   color: AppTheme.textSecondary,
                   iconSize: 22,
-                  onPressed: () {},
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Sharing post...'),
+                        behavior: SnackBarBehavior.floating,
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
